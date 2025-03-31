@@ -1,0 +1,244 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 750px;
+                 background-color: #f8f9fa;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+    <div style='width:90%; margin: 30px auto; font-family: sans-serif; font-size: 14px;'>
+    <h3>🔎 Leyenda del Sociograma</h3>
+    <ul>
+        <li><span style='color:#2ecc71;'>&#11044;</span> <b>Verde</b>: Promedio entre 9 y 10</li>
+        <li><span style='color:#f39c12;'>&#11044;</span> <b>Amarillo</b>: Promedio entre 7 y 8</li>
+        <li><span style='color:#e74c3c;'>&#11044;</span> <b>Rojo</b>: Promedio entre 1 y 6</li>
+        <li>🔁 Relaciones mutuas tienen flechas curvas en direcciones opuestas.</li>
+        <li>📏 La <b>distancia entre nodos</b> depende del número de evaluaciones mutuas: más evaluaciones → más cercanos.</li>
+    </ul>
+    </div>
+    
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"borderColor": "#40E0D0", "borderWidth": 2, "color": "#40E0D0", "font": {"color": "#343a40"}, "gradient": {"enabled": true, "from": "#40E0D0", "to": "#A7FFEB"}, "id": "Contralor\u00eda", "label": "Contralor\u00eda", "shadow": true, "shape": "circle", "size": 35, "title": "Contralor\u00eda"}, {"borderColor": "#40E0D0", "borderWidth": 2, "color": "#40E0D0", "font": {"color": "#343a40"}, "gradient": {"enabled": true, "from": "#40E0D0", "to": "#A7FFEB"}, "id": "Desarrollo", "label": "Desarrollo", "shadow": true, "shape": "circle", "size": 35, "title": "Desarrollo"}, {"borderColor": "#40E0D0", "borderWidth": 2, "color": "#40E0D0", "font": {"color": "#343a40"}, "gradient": {"enabled": true, "from": "#40E0D0", "to": "#A7FFEB"}, "id": "Personas", "label": "Personas", "shadow": true, "shape": "circle", "size": 35, "title": "Personas"}, {"borderColor": "#40E0D0", "borderWidth": 2, "color": "#40E0D0", "font": {"color": "#343a40"}, "gradient": {"enabled": true, "from": "#40E0D0", "to": "#A7FFEB"}, "id": "Productos digitales", "label": "Productos digitales", "shadow": true, "shape": "circle", "size": 35, "title": "Productos digitales"}, {"borderColor": "#40E0D0", "borderWidth": 2, "color": "#40E0D0", "font": {"color": "#343a40"}, "gradient": {"enabled": true, "from": "#40E0D0", "to": "#A7FFEB"}, "id": "Asuntos corporativos", "label": "Asuntos corporativos", "shadow": true, "shape": "circle", "size": 35, "title": "Asuntos corporativos"}]);
+                  edges = new vis.DataSet([{"arrows": {"to": {"enabled": true, "scaleFactor": 0.5}}, "color": "#e74c3c", "from": "Contralor\u00eda", "length": 133.33, "smooth": {"roundness": 0.3, "type": "curvedCW"}, "title": "1 evaluaci\u00f3n(es) - Promedio: 3.0", "to": "Desarrollo", "width": 1}, {"arrows": {"to": {"enabled": true, "scaleFactor": 0.5}}, "color": "#e74c3c", "from": "Desarrollo", "length": 133.33, "smooth": {"roundness": 0.1, "type": "curvedCCW"}, "title": "1 evaluaci\u00f3n(es) - Promedio: 4.0", "to": "Contralor\u00eda", "width": 1}, {"arrows": {"to": {"enabled": true, "scaleFactor": 0.5}}, "color": "#e74c3c", "from": "Desarrollo", "length": 200.0, "smooth": {}, "title": "1 evaluaci\u00f3n(es) - Promedio: 5.0", "to": "Personas", "width": 1}, {"arrows": {"to": {"enabled": true, "scaleFactor": 0.5}}, "color": "#e74c3c", "from": "Desarrollo", "length": 200.0, "smooth": {}, "title": "1 evaluaci\u00f3n(es) - Promedio: 3.0", "to": "Productos digitales", "width": 1}, {"arrows": {"to": {"enabled": true, "scaleFactor": 0.5}}, "color": "#e74c3c", "from": "Asuntos corporativos", "length": 200.0, "smooth": {}, "title": "1 evaluaci\u00f3n(es) - Promedio: 5.0", "to": "Desarrollo", "width": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": false,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    
+    <style>
+    table.sociotabla {
+        width: 90%;
+        margin: 30px auto;
+        border-collapse: collapse;
+        font-family: sans-serif;
+        font-size: 14px;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
+    }
+
+    .sociotabla th, .sociotabla td {
+        border: 1px solid #dee2e6;
+        padding: 10px 14px;
+        text-align: center;
+    }
+
+    .sociotabla th {
+        background-color: #007bff;
+        color: white;
+        font-weight: 500;
+    }
+
+    .sociotabla tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    .sociotabla tr:hover {
+        background-color: #e9ecef;
+    }
+    </style>
+    <h2 style='text-align:center;'>Tabla de evaluaciones entre gerencias</h2><table class="dataframe sociotabla">
+  <thead>
+    <tr style="text-align: center;">
+      <th>Gerencia Evaluadora</th>
+      <th>Gerencia Evaluada</th>
+      <th>Promedio Evaluaciones</th>
+      <th>N° Evaluadores</th>
+      <th>N Evaluaciones Mutuas</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Asuntos corporativos</td>
+      <td>Desarrollo</td>
+      <td>5.00</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>Contraloría</td>
+      <td>Desarrollo</td>
+      <td>3.00</td>
+      <td>1</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>Desarrollo</td>
+      <td>Contraloría</td>
+      <td>4.00</td>
+      <td>1</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>Desarrollo</td>
+      <td>Personas</td>
+      <td>5.00</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>Desarrollo</td>
+      <td>Productos digitales</td>
+      <td>3.00</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table></body>
+</html>
